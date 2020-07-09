@@ -20,9 +20,9 @@
 #include <opencv2/gapi/gmat.hpp>
 #include <opencv2/gapi/gscalar.hpp>
 #include <opencv2/gapi/garray.hpp>
+#include <opencv2/gapi/gopaque.hpp>
 #include <opencv2/gapi/gtype_traits.hpp>
 #include <opencv2/gapi/gmetaarg.hpp>
-#include <opencv2/gapi/own/scalar.hpp>
 #include <opencv2/gapi/streaming/source.hpp>
 
 namespace cv {
@@ -46,6 +46,7 @@ public:
     template<typename T, typename std::enable_if<!detail::is_garg<T>::value, int>::type = 0>
     explicit GArg(const T &t)
         : kind(detail::GTypeTraits<T>::kind)
+        , opaque_kind(detail::GOpaqueTraits<T>::kind)
         , value(detail::wrap_gapi_helper<T>::wrap(t))
     {
     }
@@ -53,6 +54,7 @@ public:
     template<typename T, typename std::enable_if<!detail::is_garg<T>::value, int>::type = 0>
     explicit GArg(T &&t)
         : kind(detail::GTypeTraits<typename std::decay<T>::type>::kind)
+        , opaque_kind(detail::GOpaqueTraits<typename std::decay<T>::type>::kind)
         , value(detail::wrap_gapi_helper<T>::wrap(t))
     {
     }
@@ -78,6 +80,7 @@ public:
     }
 
     detail::ArgKind kind = detail::ArgKind::OPAQUE_VAL;
+    detail::OpaqueKind opaque_kind = detail::OpaqueKind::CV_UNKNOWN;
 
 protected:
     util::any value;
@@ -89,14 +92,13 @@ using GArgs = std::vector<GArg>;
 // FIXME: Move to a separate file!
 using GRunArg  = util::variant<
 #if !defined(GAPI_STANDALONE)
-    cv::Mat,
-    cv::Scalar,
     cv::UMat,
 #endif // !defined(GAPI_STANDALONE)
     cv::gapi::wip::IStreamSource::Ptr,
-    cv::gapi::own::Mat,
-    cv::gapi::own::Scalar,
-    cv::detail::VectorRef
+    cv::Mat,
+    cv::Scalar,
+    cv::detail::VectorRef,
+    cv::detail::OpaqueRef
     >;
 using GRunArgs = std::vector<GRunArg>;
 
@@ -122,13 +124,12 @@ struct Data: public GRunArg
 
 using GRunArgP = util::variant<
 #if !defined(GAPI_STANDALONE)
-    cv::Mat*,
-    cv::Scalar*,
     cv::UMat*,
 #endif // !defined(GAPI_STANDALONE)
-    cv::gapi::own::Mat*,
-    cv::gapi::own::Scalar*,
-    cv::detail::VectorRef
+    cv::Mat*,
+    cv::Scalar*,
+    cv::detail::VectorRef,
+    cv::detail::OpaqueRef
     >;
 using GRunArgsP = std::vector<GRunArgP>;
 

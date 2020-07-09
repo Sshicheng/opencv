@@ -124,7 +124,7 @@ streams.
 
 Here is an example:
 @code
-    #include "opencv2/opencv.hpp"
+    #include "opencv2/core.hpp"
     #include <time.h>
 
     using namespace cv;
@@ -436,12 +436,20 @@ public:
      */
     CV_WRAP void writeComment(const String& comment, bool append = false);
 
-    void startWriteStruct(const String& name, int flags, const String& typeName);
-    void endWriteStruct();
+    /** @brief Starts to write a nested structure (sequence or a mapping).
+    @param name name of the structure (if it's a member of parent mapping, otherwise it should be empty
+    @param flags type of the structure (FileNode::MAP or FileNode::SEQ (both with optional FileNode::FLOW)).
+    @param typeName usually an empty string
+    */
+    CV_WRAP void startWriteStruct(const String& name, int flags, const String& typeName=String());
+
+    /** @brief Finishes writing nested structure (should pair startWriteStruct())
+    */
+    CV_WRAP void endWriteStruct();
 
     /** @brief Returns the normalized object name for the specified name of a file.
-     @param filename Name of a file
-     @returns The normalized object name.
+    @param filename Name of a file
+    @returns The normalized object name.
      */
     static String getDefaultObjectName(const String& filename);
 
@@ -509,6 +517,8 @@ public:
      @param node File node to be used as initialization for the created file node.
      */
     FileNode(const FileNode& node);
+
+    FileNode& operator=(const FileNode& node);
 
     /** @brief Returns element of a mapping node or a sequence node.
      @param nodename Name of an element in the mapping node.
@@ -639,6 +649,8 @@ public:
      @param it Iterator to be used as initialization for the created iterator.
      */
     FileNodeIterator(const FileNodeIterator& it);
+
+    FileNodeIterator& operator=(const FileNodeIterator& it);
 
     //! returns the currently observed element
     FileNode operator *() const;
